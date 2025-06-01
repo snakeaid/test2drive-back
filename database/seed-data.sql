@@ -207,10 +207,10 @@ INSERT INTO lecture_progress (id, user_id, lecture_id, completed_at, created_at,
 ('e50e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440002', '850e8400-e29b-41d4-a716-446655440002', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day');
 
 -- Insert some question attempts for student1
-INSERT INTO question_attempts (id, user_id, question_id, selected_option_id, is_correct, created_at, updated_at) VALUES
-('f50e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', 'a50e8400-e29b-41d4-a716-446655440001', 'b50e8400-e29b-41d4-a716-446655440001', true, NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'),
-('f50e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440002', 'a50e8400-e29b-41d4-a716-446655440002', 'b50e8400-e29b-41d4-a716-446655440005', false, NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'),
-('f50e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440002', 'a50e8400-e29b-41d4-a716-446655440002', 'b50e8400-e29b-41d4-a716-446655440006', true, NOW() - INTERVAL '6 hours', NOW() - INTERVAL '6 hours');
+INSERT INTO question_attempts (id, user_id, question_id, selected_option_id, attempt_number, is_correct, time_spent_seconds, created_at, updated_at) VALUES
+('f50e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', 'a50e8400-e29b-41d4-a716-446655440001', 'b50e8400-e29b-41d4-a716-446655440001', 1, true, 15, NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'),
+('f50e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440002', 'a50e8400-e29b-41d4-a716-446655440002', 'b50e8400-e29b-41d4-a716-446655440005', 1, false, 25, NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'),
+('f50e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440002', 'a50e8400-e29b-41d4-a716-446655440002', 'b50e8400-e29b-41d4-a716-446655440006', 2, true, 18, NOW() - INTERVAL '6 hours', NOW() - INTERVAL '6 hours');
 
 -- =====================================================
 -- VERIFICATION QUERIES
