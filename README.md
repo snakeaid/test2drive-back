@@ -2,9 +2,9 @@
 
 ## Environment Configuration
 
-Create the following environment files in the `env/` directory:
+Create the following environment file in the `env/` directory:
 
-### `env/.env.development`
+### `env/.env.development/production`
 ```bash
 # Database Configuration
 DB_HOST=localhost
@@ -24,52 +24,6 @@ REDIS_PASSWORD=
 
 # Application
 NODE_ENV=development
-PORT=3000
-```
-
-### `.env.example` (Create this in the root directory)
-```bash
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=password
-DB_NAME=test2drive
-
-# JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
-
-# Redis Configuration
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-
-# Application
-NODE_ENV=development
-PORT=3000
-```
-
-### `env/.env.production`
-```bash
-# Database Configuration
-DB_HOST=your-production-db-host
-DB_PORT=5432
-DB_USERNAME=your-db-username
-DB_PASSWORD=your-secure-db-password
-DB_NAME=test2drive
-
-# JWT Configuration
-JWT_SECRET=your-super-secure-jwt-secret-key
-JWT_REFRESH_SECRET=your-super-secure-refresh-secret-key
-
-# Redis Configuration
-REDIS_HOST=your-redis-host
-REDIS_PORT=6379
-REDIS_PASSWORD=your-redis-password
-
-# Application
-NODE_ENV=production
 PORT=3000
 ```
 
