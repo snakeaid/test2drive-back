@@ -22,7 +22,7 @@ export default registerAs(
       password: process.env.DB_PASSWORD || 'password',
       database: process.env.DB_NAME || 'test2drive',
       entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
-      synchronize: true, // Disable synchronize in production
+      synchronize: !isProduction, // Disable synchronize in production
       logging: !isProduction,
       ssl: isProduction ? { rejectUnauthorized: false } : false,
       extra: isProduction ? {
