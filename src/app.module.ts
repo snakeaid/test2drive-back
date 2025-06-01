@@ -8,6 +8,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
 import { QuestionsModule } from './modules/questions/questions.module';
+import { TestsModule } from './modules/tests/tests.module';
+import { ExamsModule } from './modules/exams/exams.module';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 
 @Module({
@@ -19,6 +21,8 @@ import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
     UsersModule,
     LecturesModule,
     QuestionsModule,
+    TestsModule,
+    ExamsModule,
   ],
   providers: [
     {

@@ -42,6 +42,8 @@ async function bootstrap() {
       .addTag('users', 'User management endpoints')
       .addTag('lectures', 'Lectures and categories endpoints')
       .addTag('questions', 'Questions and answer submission endpoints')
+      .addTag('tests', 'Tests, sessions, and results endpoints')
+      .addTag('exams', 'Official exams with stricter rules and validation')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
