@@ -6,6 +6,7 @@ import { coreModules } from './core/core.modules';
 import { LoggerModule } from './modules/logger/logger.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { LecturesModule } from './modules/lectures/lectures.module';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 
 @Module({
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
     LoggerModule,
     AuthModule,
     UsersModule,
+    LecturesModule,
   ],
   providers: [
     {
