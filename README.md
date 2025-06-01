@@ -1,73 +1,169 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Test2Drive Setup Instructions
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Environment Configuration
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Create the following environment files in the `env/` directory:
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
-
+### `env/.env.development`
 ```bash
-$ npm install
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=password
+DB_NAME=test2drive
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
+
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Application
+NODE_ENV=development
+PORT=3000
 ```
 
-## Running the app
-
+### `.env.example` (Create this in the root directory)
 ```bash
-# development
-$ npm run start
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=password
+DB_NAME=test2drive
 
-# watch mode
-$ npm run start:dev
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
 
-# production mode
-$ npm run start:prod
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Application
+NODE_ENV=development
+PORT=3000
 ```
 
-## Test
-
+### `env/.env.production`
 ```bash
-# unit tests
-$ npm run test
+# Database Configuration
+DB_HOST=your-production-db-host
+DB_PORT=5432
+DB_USERNAME=your-db-username
+DB_PASSWORD=your-secure-db-password
+DB_NAME=test2drive
 
-# e2e tests
-$ npm run test:e2e
+# JWT Configuration
+JWT_SECRET=your-super-secure-jwt-secret-key
+JWT_REFRESH_SECRET=your-super-secure-refresh-secret-key
 
-# test coverage
-$ npm run test:cov
+# Redis Configuration
+REDIS_HOST=your-redis-host
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password
+
+# Application
+NODE_ENV=production
+PORT=3000
 ```
 
-## Support
+## Database Setup
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+1. Install PostgreSQL
+2. Create database:
+```sql
+CREATE DATABASE test2drive;
+```
 
-## Stay in touch
+3. The application will automatically create tables on first run (synchronize: true in development)
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Redis Setup
 
-## License
+1. Install Redis
+2. Start Redis server:
+```bash
+redis-server
+```
 
-Nest is [MIT licensed](LICENSE).
+## Running the Application
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start development server:
+```bash
+npm run start:dev
+```
+
+## API Documentation (Swagger)
+
+After starting the application, you can access the interactive API documentation at:
+
+**🚀 Swagger UI: http://localhost:5001/api-docs**
+
+### Features:
+- ✅ **Interactive Testing**: Test all endpoints directly from the browser
+- ✅ **JWT Authentication**: Click "Authorize" button to add Bearer token
+- ✅ **Request/Response Examples**: See exactly what data to send and expect
+- ✅ **Validation Info**: View all validation rules and constraints
+- ✅ **Schema Documentation**: Detailed data model descriptions
+
+### How to Use Swagger:
+1. **Register a user** via `POST /auth/register`
+2. **Login** via `POST /auth/login` to get JWT tokens
+3. **Click "Authorize"** button in Swagger UI
+4. **Enter token** as: `Bearer your-access-token-here`
+5. **Test protected endpoints** like `/users/me` or `/auth/profile`
+
+## API Endpoints
+
+### Authentication
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `POST /auth/refresh` - Refresh access token
+- `GET /auth/profile` - Get current user profile
+
+### Users
+- `GET /users/me` - Get current user details
+- `GET /users/:id` - Get user by ID
+- `PUT /users/me/profile` - Update user profile
+
+## Database Schema
+
+### Users Table
+- `id` (UUID, Primary Key)
+- `email` (VARCHAR, Unique)
+- `password_hash` (VARCHAR)
+- `first_name` (VARCHAR, Nullable)
+- `last_name` (VARCHAR, Nullable)
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+
+### User Profiles Table
+- `id` (UUID, Primary Key)
+- `user_id` (UUID, Foreign Key)
+- `phone` (VARCHAR, Nullable)
+- `date_of_birth` (DATE, Nullable)
+- `avatar_url` (VARCHAR, Nullable)
+
+## Security Features
+
+- JWT-based authentication
+- Password hashing with bcryptjs
+- Global JWT guard with public endpoint exceptions
+- Input validation with class-validator
+- CORS protection
+
+## Additional Dependencies Added
+
+- **@nestjs/swagger**: OpenAPI/Swagger documentation
+- **swagger-ui-express**: Swagger UI interface
+- **@types/swagger-ui-express**: TypeScript types for Swagger UI 

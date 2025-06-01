@@ -1,5 +1,5 @@
 import winston from './winston';
 import redis from './redis';
-import telegraf from './telegraf';
+import database from './database';
 
-export default [winston, telegraf, redis];
+export default [winston, redis, database];

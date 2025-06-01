@@ -1,8 +1,8 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WinstonModule, WinstonModuleOptions } from 'nest-winston';
-import { TelegrafModule, TelegrafModuleOptions } from 'nestjs-telegraf';
 import configs from './config/main';
 import { RedisModule, RedisModuleOptions } from './redis';
+import { DatabaseModule } from './database/database.module';
 
 export const coreModules = [
   ConfigModule.forRoot({
@@ -16,16 +16,11 @@ export const coreModules = [
       ...configService.get('winston'),
     }),
   }),
-  // RedisModule.forRootAsync({
-  //   inject: [ConfigService],
-  //   useFactory: async (configService: ConfigService): Promise<RedisModuleOptions> => ({
-  //     ...configService.get('redis'),
-  //   }),
-  // }),
-  TelegrafModule.forRootAsync({
+  RedisModule.forRootAsync({
     inject: [ConfigService],
-    useFactory: async (configService: ConfigService): Promise<TelegrafModuleOptions> => ({
-      ...configService.get('telegraf'),
+    useFactory: async (configService: ConfigService): Promise<RedisModuleOptions> => ({
+      ...configService.get('redis'),
     }),
   }),
+  DatabaseModule,
 ];
