@@ -44,4 +44,4 @@ export class Lecture {
 
   @OneToMany(() => LectureProgress, (progress) => progress.lecture)
   userProgress: LectureProgress[];
-} 
+}
