@@ -35,7 +35,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # Environments
-src/env/*
-!src/env/.env.example
+env/*
+!env/.env.example
 
 .history/
