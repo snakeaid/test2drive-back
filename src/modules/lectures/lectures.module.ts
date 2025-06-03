@@ -5,6 +5,7 @@ import { LecturesController } from './lectures.controller';
 import { LectureCategory } from './entities/lecture-category.entity';
 import { Lecture } from './entities/lecture.entity';
 import { LectureProgress } from './entities/lecture-progress.entity';
+import { CacheModule } from '../cache/cache.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { LectureProgress } from './entities/lecture-progress.entity';
       Lecture,
       LectureProgress,
     ]),
+    CacheModule,
   ],
   controllers: [LecturesController],
   providers: [LecturesService],
