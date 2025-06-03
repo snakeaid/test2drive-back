@@ -8,7 +8,7 @@ export const coreModules = [
   ConfigModule.forRoot({
     isGlobal: true,
     load: configs,
-    envFilePath: `./env/${!process.env.NODE_ENV ? '.env.production' : `.env.${process.env.NODE_ENV}`}`,
+    envFilePath: "C:\\Users\\Home\\WebstormProjects\\test2drive-back\\src\\env\\.env.development",
   }),
   WinstonModule.forRootAsync({
     inject: [ConfigService],
