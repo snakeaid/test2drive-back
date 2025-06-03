@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QuestionCategory } from './entities/question-category.entity';
@@ -10,6 +15,7 @@ import { UpdateQuestionCategoryDto } from './dto/update-question-category.dto';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class QuestionsService {
@@ -22,19 +28,13 @@ export class QuestionsService {
     private questionOptionRepository: Repository<QuestionOption>,
     @InjectRepository(QuestionAttempt)
     private questionAttemptRepository: Repository<QuestionAttempt>,
+    private readonly cacheService: CacheService,
   ) {}
 
-  // Category methods
-  async createCategory(createCategoryDto: CreateQuestionCategoryDto): Promise<QuestionCategory> {
-    const existingCategory = await this.questionCategoryRepository.findOne({
-      where: { name: createCategoryDto.name },
-    });
-
-    if (existingCategory) {
-      throw new ConflictException('Category with this name already exists');
-    }
-
-    const category = this.questionCategoryRepository.create(createCategoryDto);
+  async createCategory(dto: CreateQuestionCategoryDto): Promise<QuestionCategory> {
+    const exists = await this.questionCategoryRepository.findOne({ where: { name: dto.name } });
+    if (exists) throw new ConflictException('Category already exists');
+    const category = this.questionCategoryRepository.create(dto);
     return this.questionCategoryRepository.save(category);
   }
 
@@ -50,28 +50,17 @@ export class QuestionsService {
       where: { id },
       relations: ['lectureCategory', 'questions'],
     });
-
-    if (!category) {
-      throw new NotFoundException('Question category not found');
-    }
-
+    if (!category) throw new NotFoundException('Question category not found');
     return category;
   }
 
-  async updateCategory(id: string, updateCategoryDto: UpdateQuestionCategoryDto): Promise<QuestionCategory> {
+  async updateCategory(id: string, dto: UpdateQuestionCategoryDto): Promise<QuestionCategory> {
     const category = await this.findCategoryById(id);
-
-    if (updateCategoryDto.name && updateCategoryDto.name !== category.name) {
-      const existingCategory = await this.questionCategoryRepository.findOne({
-        where: { name: updateCategoryDto.name },
-      });
-
-      if (existingCategory) {
-        throw new ConflictException('Category with this name already exists');
-      }
+    if (dto.name && dto.name !== category.name) {
+      const exists = await this.questionCategoryRepository.findOne({ where: { name: dto.name } });
+      if (exists) throw new ConflictException('Category already exists');
     }
-
-    Object.assign(category, updateCategoryDto);
+    Object.assign(category, dto);
     return this.questionCategoryRepository.save(category);
   }
 
@@ -80,29 +69,23 @@ export class QuestionsService {
     await this.questionCategoryRepository.remove(category);
   }
 
-  // Question methods
-  async createQuestion(createQuestionDto: CreateQuestionDto): Promise<Question> {
-    // Verify category exists
-    await this.findCategoryById(createQuestionDto.categoryId);
+  async createQuestion(dto: CreateQuestionDto): Promise<Question> {
+    await this.findCategoryById(dto.categoryId);
 
-    // Validate options
-    const correctOptions = createQuestionDto.options.filter(option => option.isCorrect);
-    if (correctOptions.length !== 1) {
-      throw new BadRequestException('Question must have exactly one correct option');
-    }
+    const correctOptions = dto.options.filter((opt) => opt.isCorrect);
+    if (correctOptions.length !== 1)
+      throw new BadRequestException('Exactly one option must be correct');
 
-    // Validate option letters are unique
-    const optionLetters = createQuestionDto.options.map(option => option.optionLetter.toUpperCase());
+    const optionLetters = dto.options.map((opt) => opt.optionLetter.toUpperCase());
     const uniqueLetters = new Set(optionLetters);
-    if (optionLetters.length !== uniqueLetters.size) {
+    if (optionLetters.length !== uniqueLetters.size)
       throw new BadRequestException('Option letters must be unique');
-    }
 
     const question = this.questionRepository.create({
-      ...createQuestionDto,
-      options: createQuestionDto.options.map(option => ({
-        ...option,
-        optionLetter: option.optionLetter.toUpperCase(),
+      ...dto,
+      options: dto.options.map((opt) => ({
+        ...opt,
+        optionLetter: opt.optionLetter.toUpperCase(),
       })),
     });
 
@@ -110,25 +93,19 @@ export class QuestionsService {
   }
 
   async findAllQuestions(includeUnpublished = false): Promise<Question[]> {
-    const whereCondition = includeUnpublished ? {} : { isPublished: true };
-    
+    const where = includeUnpublished ? {} : { isPublished: true };
     return this.questionRepository.find({
-      where: whereCondition,
+      where,
       relations: ['category', 'options'],
       order: { sortOrder: 'ASC', questionText: 'ASC' },
     });
   }
 
   async findQuestionsByCategory(categoryId: string, includeUnpublished = false): Promise<Question[]> {
-    // Verify category exists
     await this.findCategoryById(categoryId);
-
-    const whereCondition = includeUnpublished 
-      ? { categoryId } 
-      : { categoryId, isPublished: true };
-
+    const where = includeUnpublished ? { categoryId } : { categoryId, isPublished: true };
     return this.questionRepository.find({
-      where: whereCondition,
+      where,
       relations: ['category', 'options'],
       order: { sortOrder: 'ASC', questionText: 'ASC' },
     });
@@ -136,48 +113,36 @@ export class QuestionsService {
 
   async findQuestionById(id: string, includeOptions = true): Promise<Question> {
     const relations = ['category'];
-    if (includeOptions) {
-      relations.push('options');
-    }
+    if (includeOptions) relations.push('options');
 
     const question = await this.questionRepository.findOne({
       where: { id },
       relations,
       order: { options: { sortOrder: 'ASC' } },
     });
-
-    if (!question) {
-      throw new NotFoundException('Question not found');
-    }
-
+    if (!question) throw new NotFoundException('Question not found');
     return question;
   }
 
-  async updateQuestion(id: string, updateQuestionDto: UpdateQuestionDto): Promise<Question> {
+  async updateQuestion(id: string, dto: UpdateQuestionDto): Promise<Question> {
     const question = await this.findQuestionById(id);
 
-    if (updateQuestionDto.categoryId) {
-      // Verify new category exists
-      await this.findCategoryById(updateQuestionDto.categoryId);
-    }
+    if (dto.categoryId) await this.findCategoryById(dto.categoryId);
 
-    if (updateQuestionDto.options) {
-      // Validate options if provided
-      const correctOptions = updateQuestionDto.options.filter(option => option.isCorrect);
-      if (correctOptions.length !== 1) {
-        throw new BadRequestException('Question must have exactly one correct option');
-      }
+    if (dto.options) {
+      const correctOptions = dto.options.filter((o) => o.isCorrect);
+      if (correctOptions.length !== 1)
+        throw new BadRequestException('Exactly one option must be correct');
 
-      // Remove existing options
       await this.questionOptionRepository.delete({ questionId: id });
     }
 
-    Object.assign(question, updateQuestionDto);
-    
-    if (updateQuestionDto.options) {
-      question.options = updateQuestionDto.options.map(option => ({
-        ...option,
-        optionLetter: option.optionLetter.toUpperCase(),
+    Object.assign(question, dto);
+
+    if (dto.options) {
+      question.options = dto.options.map((opt) => ({
+        ...opt,
+        optionLetter: opt.optionLetter.toUpperCase(),
         questionId: id,
       })) as any;
     }
@@ -190,53 +155,40 @@ export class QuestionsService {
     await this.questionRepository.remove(question);
   }
 
-  // Answer methods
-  async answerQuestion(userId: string, questionId: string, answerDto: AnswerQuestionDto): Promise<{
-    isCorrect: boolean;
-    correctOption: QuestionOption;
-    explanation?: string;
-    attempt: QuestionAttempt;
-  }> {
-    // Verify question exists
+  async answerQuestion(userId: string, questionId: string, dto: AnswerQuestionDto) {
     const question = await this.findQuestionById(questionId);
-
-    // Verify selected option belongs to this question
-    const selectedOption = await this.questionOptionRepository.findOne({
-      where: { id: answerDto.selectedOptionId, questionId },
+    const selected = await this.questionOptionRepository.findOne({
+      where: { id: dto.selectedOptionId, questionId },
     });
-
-    if (!selectedOption) {
+    if (!selected)
       throw new BadRequestException('Selected option does not belong to this question');
-    }
 
-    // Find correct option
-    const correctOption = question.options.find(option => option.isCorrect);
-    if (!correctOption) {
+    const correctOption = question.options.find((o) => o.isCorrect);
+    if (!correctOption)
       throw new BadRequestException('Question has no correct option');
-    }
 
-    // Get next attempt number
-    const lastAttempt = await this.questionAttemptRepository.findOne({
+    const last = await this.questionAttemptRepository.findOne({
       where: { userId, questionId },
       order: { attemptNumber: 'DESC' },
     });
 
-    const attemptNumber = lastAttempt ? lastAttempt.attemptNumber + 1 : 1;
-
-    // Create attempt record
     const attempt = this.questionAttemptRepository.create({
       userId,
       questionId,
-      selectedOptionId: answerDto.selectedOptionId,
-      isCorrect: selectedOption.isCorrect,
-      timeSpentSeconds: answerDto.timeSpentSeconds,
-      attemptNumber,
+      selectedOptionId: dto.selectedOptionId,
+      isCorrect: selected.isCorrect,
+      timeSpentSeconds: dto.timeSpentSeconds,
+      attemptNumber: last ? last.attemptNumber + 1 : 1,
     });
 
     const savedAttempt = await this.questionAttemptRepository.save(attempt);
 
+    // invalidate cache
+    await this.cacheService.del(`stats:summary:${userId}`);
+    await this.cacheService.del(`stats:tests:${userId}`);
+
     return {
-      isCorrect: selectedOption.isCorrect,
+      isCorrect: selected.isCorrect,
       correctOption,
       explanation: question.explanation,
       attempt: savedAttempt,
@@ -253,10 +205,7 @@ export class QuestionsService {
 
   async getUserAttemptsByCategory(userId: string, categoryId: string): Promise<QuestionAttempt[]> {
     return this.questionAttemptRepository.find({
-      where: { 
-        userId,
-        question: { categoryId }
-      },
+      where: { userId, question: { categoryId } },
       relations: ['question', 'question.category', 'selectedOption'],
       order: { createdAt: 'DESC' },
     });
@@ -269,4 +218,4 @@ export class QuestionsService {
       order: { attemptNumber: 'ASC' },
     });
   }
-} 
+}
