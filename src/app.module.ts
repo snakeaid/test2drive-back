@@ -11,7 +11,6 @@ import { QuestionsModule } from './modules/questions/questions.module';
 import { TestsModule } from './modules/tests/tests.module';
 import { ExamsModule } from './modules/exams/exams.module';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
-import { StatisticsModule } from './modules/statistics/statistics.module';
 
 @Module({
   imports: [
@@ -24,7 +23,6 @@ import { StatisticsModule } from './modules/statistics/statistics.module';
     QuestionsModule,
     TestsModule,
     ExamsModule,
-    StatisticsModule,
   ],
   providers: [
     {
