@@ -26,9 +26,4 @@ export class CacheService {
 
     await this.redisClient.multi().select(index).set(key, JSON.stringify(value)).exec();
   }
-
-  public async del(key: string, index = 0): Promise<void> {
-    await this.redisClient.multi().select(index).del(key).exec();
-  }
-
 }

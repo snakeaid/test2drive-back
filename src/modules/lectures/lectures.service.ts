@@ -8,7 +8,6 @@ import { CreateLectureCategoryDto } from './dto/create-lecture-category.dto';
 import { UpdateLectureCategoryDto } from './dto/update-lecture-category.dto';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
-import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class LecturesService {
@@ -19,14 +18,19 @@ export class LecturesService {
     private lectureRepository: Repository<Lecture>,
     @InjectRepository(LectureProgress)
     private lectureProgressRepository: Repository<LectureProgress>,
-    private readonly cacheService: CacheService,
   ) {}
 
-  async createCategory(createDto: CreateLectureCategoryDto): Promise<LectureCategory> {
-    const exists = await this.lectureCategoryRepository.findOne({ where: { name: createDto.name } });
-    if (exists) throw new ConflictException('Category already exists');
+  // Category methods
+  async createCategory(createCategoryDto: CreateLectureCategoryDto): Promise<LectureCategory> {
+    const existingCategory = await this.lectureCategoryRepository.findOne({
+      where: { name: createCategoryDto.name },
+    });
 
-    const category = this.lectureCategoryRepository.create(createDto);
+    if (existingCategory) {
+      throw new ConflictException('Category with this name already exists');
+    }
+
+    const category = this.lectureCategoryRepository.create(createCategoryDto);
     return this.lectureCategoryRepository.save(category);
   }
 
@@ -42,17 +46,28 @@ export class LecturesService {
       where: { id },
       relations: ['lectures'],
     });
-    if (!category) throw new NotFoundException('Category not found');
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
     return category;
   }
 
-  async updateCategory(id: string, dto: UpdateLectureCategoryDto): Promise<LectureCategory> {
+  async updateCategory(id: string, updateCategoryDto: UpdateLectureCategoryDto): Promise<LectureCategory> {
     const category = await this.findCategoryById(id);
-    if (dto.name && dto.name !== category.name) {
-      const exists = await this.lectureCategoryRepository.findOne({ where: { name: dto.name } });
-      if (exists) throw new ConflictException('Category already exists');
+
+    if (updateCategoryDto.name && updateCategoryDto.name !== category.name) {
+      const existingCategory = await this.lectureCategoryRepository.findOne({
+        where: { name: updateCategoryDto.name },
+      });
+
+      if (existingCategory) {
+        throw new ConflictException('Category with this name already exists');
+      }
     }
-    Object.assign(category, dto);
+
+    Object.assign(category, updateCategoryDto);
     return this.lectureCategoryRepository.save(category);
   }
 
@@ -61,9 +76,12 @@ export class LecturesService {
     await this.lectureCategoryRepository.remove(category);
   }
 
-  async createLecture(dto: CreateLectureDto): Promise<Lecture> {
-    await this.findCategoryById(dto.categoryId);
-    const lecture = this.lectureRepository.create(dto);
+  // Lecture methods
+  async createLecture(createLectureDto: CreateLectureDto): Promise<Lecture> {
+    // Verify category exists
+    await this.findCategoryById(createLectureDto.categoryId);
+
+    const lecture = this.lectureRepository.create(createLectureDto);
     return this.lectureRepository.save(lecture);
   }
 
@@ -76,7 +94,9 @@ export class LecturesService {
   }
 
   async findLecturesByCategory(categoryId: string): Promise<Lecture[]> {
+    // Verify category exists
     await this.findCategoryById(categoryId);
+
     return this.lectureRepository.find({
       where: { categoryId, isPublished: true },
       relations: ['category'],
@@ -85,15 +105,27 @@ export class LecturesService {
   }
 
   async findLectureById(id: string): Promise<Lecture> {
-    const lecture = await this.lectureRepository.findOne({ where: { id }, relations: ['category'] });
-    if (!lecture) throw new NotFoundException('Lecture not found');
+    const lecture = await this.lectureRepository.findOne({
+      where: { id },
+      relations: ['category'],
+    });
+
+    if (!lecture) {
+      throw new NotFoundException('Lecture not found');
+    }
+
     return lecture;
   }
 
-  async updateLecture(id: string, dto: UpdateLectureDto): Promise<Lecture> {
+  async updateLecture(id: string, updateLectureDto: UpdateLectureDto): Promise<Lecture> {
     const lecture = await this.findLectureById(id);
-    if (dto.categoryId) await this.findCategoryById(dto.categoryId);
-    Object.assign(lecture, dto);
+
+    if (updateLectureDto.categoryId) {
+      // Verify new category exists
+      await this.findCategoryById(updateLectureDto.categoryId);
+    }
+
+    Object.assign(lecture, updateLectureDto);
     return this.lectureRepository.save(lecture);
   }
 
@@ -102,10 +134,15 @@ export class LecturesService {
     await this.lectureRepository.remove(lecture);
   }
 
+  // Progress methods
   async markLectureAsCompleted(userId: string, lectureId: string): Promise<LectureProgress> {
+    // Verify lecture exists
     await this.findLectureById(lectureId);
 
-    let progress = await this.lectureProgressRepository.findOne({ where: { userId, lectureId } });
+    let progress = await this.lectureProgressRepository.findOne({
+      where: { userId, lectureId },
+    });
+
     if (!progress) {
       progress = this.lectureProgressRepository.create({
         userId,
@@ -118,13 +155,7 @@ export class LecturesService {
       progress.completedAt = new Date();
     }
 
-    const saved = await this.lectureProgressRepository.save(progress);
-
-    // Invalidate cache
-    await this.cacheService.del(`stats:summary:${userId}`);
-    await this.cacheService.del(`stats:lectures:${userId}`);
-
-    return saved;
+    return this.lectureProgressRepository.save(progress);
   }
 
   async getUserProgress(userId: string): Promise<LectureProgress[]> {
@@ -137,9 +168,12 @@ export class LecturesService {
 
   async getUserProgressByCategory(userId: string, categoryId: string): Promise<LectureProgress[]> {
     return this.lectureProgressRepository.find({
-      where: { userId, lecture: { categoryId } },
+      where: { 
+        userId,
+        lecture: { categoryId }
+      },
       relations: ['lecture', 'lecture.category'],
       order: { createdAt: 'DESC' },
     });
   }
-}
+} 
